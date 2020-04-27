@@ -6,6 +6,7 @@
 			"type": "string"
 		}
 	},
+	"context": [ "postId" ],
 	"supports": {
 		"html": false,
 		"lightBlockWrapper": true
