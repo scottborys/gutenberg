@@ -29,6 +29,7 @@
 		"esModuleInterop": false,
 		"resolveJsonModule": true,
 
+		"typeRoots": [ "./typings", "./node_modules/@types" ],
 		"types": []
 	},
 	"exclude": [
