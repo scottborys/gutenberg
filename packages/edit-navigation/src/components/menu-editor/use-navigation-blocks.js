@@ -6,12 +6,24 @@ import { groupBy, isEqual, difference } from 'lodash';
 /**
  * WordPress dependencies
  */
-import { createBlock } from '@wordpress/blocks';
+import { createBlock, parse, serialize } from '@wordpress/blocks';
 import { useSelect, useDispatch } from '@wordpress/data';
 import { useState, useRef, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 function createBlockFromMenuItem( menuItem, innerBlocks = [] ) {
+	if ( menuItem.type === 'html' ) {
+		const [ parsedBlock ] = parse( menuItem.content.raw ); // TODO: Handle multiple blocks?
+
+		if ( ! parsedBlock ) {
+			return createBlock( 'core/freeform', {
+				originalContent: menuItem.content.raw,
+			} );
+		}
+
+		return parsedBlock;
+	}
+
 	return createBlock(
 		'core/navigation-link',
 		{
@@ -23,7 +35,15 @@ function createBlockFromMenuItem( menuItem, innerBlocks = [] ) {
 }
 
 function createMenuItemAttributesFromBlock( block ) {
+	if ( block.name !== 'core/navigation-link' ) {
+		return {
+			type: 'html',
+			content: serialize( block ),
+		};
+	}
+
 	return {
+		type: 'custom',
 		title: block.attributes.label,
 		url: block.attributes.url,
 	};

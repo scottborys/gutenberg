@@ -1,9 +1,6 @@
 {
 	"name": "core/navigation-link",
 	"category": "layout",
-	"parent": [
-		"core/navigation"
-	],
 	"attributes": {
 		"label": {
 			"type": "string"
