@@ -301,7 +301,7 @@ export default function WritingFlow( { children } ) {
 	function onMouseDown( event ) {
 		verticalRect.current = null;
 
-		// Clicking inside a selected block should exit navigation mode.
+		// Clicking inside a selected block should exit navigation mode and block moving mode.
 		if (
 			isNavigationMode &&
 			selectedBlockClientId &&
@@ -311,6 +311,18 @@ export default function WritingFlow( { children } ) {
 			)
 		) {
 			setNavigationMode( false );
+			setBlockMovingMode( '' );
+		} else if (
+			isNavigationMode &&
+			isBlockMovingMode() &&
+			getBlockClientId( event.target )
+		) {
+			setCanInsertMovingBlock(
+				canInsertBlockType(
+					getBlockName( isBlockMovingMode() ),
+					getBlockRootClientId( getBlockClientId( event.target ) )
+				)
+			);
 		}
 
 		// Multi-select blocks when Shift+clicking.
