@@ -250,6 +250,7 @@ const Popover = ( {
 	onFocusOutside,
 	__unstableSticky,
 	__unstableSlotName = SLOT_NAME,
+	__unstableObserveElement,
 	__unstableFixedPosition = true,
 	__unstableBoundaryParent,
 	/* eslint-enable no-unused-vars */
@@ -417,6 +418,13 @@ const Popover = ( {
 		window.addEventListener( 'resize', refresh );
 		window.addEventListener( 'scroll', refresh, true );
 
+		let observer;
+
+		if ( __unstableObserveElement ) {
+			observer = new window.MutationObserver( refresh );
+			observer.observe( __unstableObserveElement, { attributes: true } );
+		}
+
 		return () => {
 			window.clearTimeout( timeoutId );
 			window.clearInterval( intervalHandle );
@@ -424,6 +432,10 @@ const Popover = ( {
 			window.removeEventListener( 'scroll', refresh, true );
 			window.removeEventListener( 'click', refreshOnAnimationFrame );
 			window.cancelAnimationFrame( rafId );
+
+			if ( observer ) {
+				observer.disconnect();
+			}
 		};
 	}, [
 		isExpanded,
@@ -433,6 +445,7 @@ const Popover = ( {
 		shouldAnchorIncludePadding,
 		position,
 		__unstableSticky,
+		__unstableObserveElement,
 		__unstableBoundaryParent,
 	] );
 

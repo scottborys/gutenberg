@@ -155,6 +155,8 @@ function BlockPopover( {
 			__unstableSticky={ ! showEmptyBlockSideInserter }
 			__unstableSlotName="block-toolbar"
 			__unstableBoundaryParent
+			// Observe movement for block animations (especially horizontal).
+			__unstableObserveElement={ node }
 			onBlur={ () => setIsToolbarForced( false ) }
 			shouldAnchorIncludePadding
 			// Popover calculates the width once. Trigger a reset by remounting
