@@ -126,11 +126,12 @@ function useMovingAnimation(
 		reset: triggeredAnimation !== finishedAnimation,
 		config: { mass: 5, tension: 2000, friction: 200 },
 		immediate: prefersReducedMotion,
-		onFrame: () => {
+		onFrame: ( props ) => {
 			if (
 				adjustScrolling &&
 				scrollContainer.current &&
-				! prefersReducedMotion
+				! prefersReducedMotion &&
+				props.y
 			) {
 				const blockRect = ref.current.getBoundingClientRect();
 				const diff = blockRect.top - transform.clientTop;
