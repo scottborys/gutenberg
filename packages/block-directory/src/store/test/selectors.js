@@ -8,6 +8,7 @@ import {
 	getErrorNoticeForBlock,
 	getInstalledBlockTypes,
 	isInstalling,
+	isRequestingDownloadableBlocks,
 } from '../selectors';
 
 describe( 'selectors', () => {
@@ -21,6 +22,30 @@ describe( 'selectors', () => {
 			};
 			const installedBlockTypes = getInstalledBlockTypes( state );
 			expect( installedBlockTypes ).toEqual( blockTypes );
+		} );
+	} );
+
+	describe( 'isRequestingDownloadableBlocks', () => {
+		it( 'should return false if there are no calls pending', () => {
+			const state = {
+				downloadableBlocks: {
+					pendingBlockRequests: 0,
+				},
+			};
+			const isRequesting = isRequestingDownloadableBlocks( state );
+
+			expect( isRequesting ).toEqual( false );
+		} );
+
+		it( 'should return true if at least one call is pending', () => {
+			const state = {
+				downloadableBlocks: {
+					pendingBlockRequests: 1,
+				},
+			};
+			const isRequesting = isRequestingDownloadableBlocks( state );
+
+			expect( isRequesting ).toEqual( true );
 		} );
 	} );
 
@@ -66,7 +91,6 @@ describe( 'selectors', () => {
 	describe( 'getDownloadableBlocks', () => {
 		const state = {
 			downloadableBlocks: {
-				isRequestingDownloadableBlocks: false,
 				results: {
 					boxer: [ downloadableBlock ],
 				},
