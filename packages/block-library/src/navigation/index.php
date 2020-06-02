@@ -230,7 +230,7 @@ function block_core_navigation_build_html( $attributes, $block, $colors, $font_s
 		};
 
 		$item_url = get_navigation_link_url( $block['attrs'] );
-		$item_tag = $item_url ? 'a' : 'div';
+		$item_tag = $item_url ? 'a' : 'span';
 
 		$html .= '<li class="' . esc_attr( $css_classes . ( $has_submenu ? ' has-child' : '' ) ) .
 			( $is_active ? ' current-menu-item' : '' ) . '"' . $style_attribute . '>' .
