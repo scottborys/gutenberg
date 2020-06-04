@@ -47,11 +47,12 @@ function BlockBreadcrumb( {
 			const { name, attributes } = __unstableGetBlockWithoutInnerBlocks(
 				clientId
 			);
-			return { index, name, attributes, isBlockMovingMode };
+			const blockMovingMode = isBlockMovingMode();
+			return { index, name, attributes, blockMovingMode };
 		},
 		[ clientId, rootClientId ]
 	);
-	const { index, name, attributes, isBlockMovingMode } = selected;
+	const { index, name, attributes, blockMovingMode } = selected;
 	const { setNavigationMode, removeBlock } = useDispatch(
 		'core/block-editor'
 	);
@@ -80,7 +81,7 @@ function BlockBreadcrumb( {
 	);
 
 	const classNames = classnames( 'block-editor-block-list__breadcrumb', {
-		'is-navigate-mode': !! isBlockMovingMode(),
+		'is-block-moving-mode': !! blockMovingMode,
 	} );
 
 	return (

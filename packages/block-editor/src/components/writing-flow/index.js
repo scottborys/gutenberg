@@ -448,7 +448,10 @@ export default function WritingFlow( { children } ) {
 					)
 				);
 			}
-
+			if ( isEscape && startingBlockClientId ) {
+				setBlockMovingMode( null );
+				setCanInsertMovingBlock( false );
+			}
 			if ( ( isEnter || isSpace ) && startingBlockClientId ) {
 				const sourceRoot = getBlockRootClientId(
 					startingBlockClientId
