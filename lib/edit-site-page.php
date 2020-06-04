@@ -144,7 +144,6 @@ function gutenberg_edit_site_init( $hook ) {
 	}
 	$settings['styles'] = gutenberg_get_editor_styles();
 
-	$template_ids      = array();
 	$template_part_ids = array();
 	foreach ( get_template_types() as $template_type ) {
 		// Skip 'embed' for now because it is not a regular template type.
@@ -155,17 +154,19 @@ function gutenberg_edit_site_init( $hook ) {
 
 		$current_template = gutenberg_find_template_post_and_parts( $template_type );
 		if ( isset( $current_template ) ) {
-			$template_ids[ $current_template['template_post']->post_name ] = $current_template['template_post']->ID;
 			$template_part_ids = $template_part_ids + $current_template['template_part_ids'];
 		}
 	}
 
-	$current_template_id = $template_ids['front-page'];
+	$home_template = gutenberg_find_template_post_and_parts( 'front-page' );
+	if ( isset( $home_template ) ) {
+		$home_template_id = $home_template['template_post']->ID;
+	}
 
 	$settings['editSiteInitialState'] = array();
 
-	$settings['editSiteInitialState']['homeTemplateId']  = $current_template_id;
-	$settings['editSiteInitialState']['templateId']      = $current_template_id;
+	$settings['editSiteInitialState']['homeTemplateId']  = $home_template_id;
+	$settings['editSiteInitialState']['templateId']      = $home_template_id;
 	$settings['editSiteInitialState']['templateType']    = 'wp_template';
 	$settings['editSiteInitialState']['templatePartIds'] = array_values( $template_part_ids );
 
@@ -191,7 +192,7 @@ function gutenberg_edit_site_init( $hook ) {
 		'/wp/v2/taxonomies?per_page=100&context=edit',
 		'/wp/v2/pages?per_page=100&context=edit',
 		'/wp/v2/themes?status=active',
-		sprintf( '/wp/v2/templates/%s?context=edit', $current_template_id ),
+		sprintf( '/wp/v2/templates/%s?context=edit', $home_template_id ),
 		array( '/wp/v2/media', 'OPTIONS' ),
 	);
 	$preload_data  = array_reduce(
