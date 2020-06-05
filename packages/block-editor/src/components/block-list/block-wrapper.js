@@ -22,124 +22,118 @@ import { Context, SetBlockNodes } from './root-container';
 import { BlockListBlockContext } from './block';
 import ELEMENTS from './block-wrapper-elements';
 
-const BlockComponent = forwardRef(
-	(
-		{ children, tagName: TagName = 'div', __unstableIsHtml, ...props },
-		wrapper
-	) => {
-		const onSelectionStart = useContext( Context );
-		const setBlockNodes = useContext( SetBlockNodes );
-		const {
-			clientId,
-			rootClientId,
-			isSelected,
-			isFirstMultiSelected,
-			isLastMultiSelected,
-			isMultiSelecting,
-			isNavigationMode,
-			isPartOfMultiSelection,
-			enableAnimation,
-			index,
-			className,
-			isLocked,
-			name,
-			mode,
-			blockTitle,
-			wrapperProps,
-		} = useContext( BlockListBlockContext );
-		const { initialPosition } = useSelect(
-			( select ) => {
-				if ( ! isSelected ) {
-					return {};
-				}
-
-				return {
-					initialPosition: select(
-						'core/block-editor'
-					).getSelectedBlocksInitialCaretPosition(),
-				};
-			},
-			[ isSelected ]
-		);
-		const { removeBlock, insertDefaultBlock } = useDispatch(
-			'core/block-editor'
-		);
-		const fallbackRef = useRef();
-		const isAligned = wrapperProps && !! wrapperProps[ 'data-align' ];
-		wrapper = wrapper || fallbackRef;
-
-		// Provide the selected node, or the first and last nodes of a multi-
-		// selection, so it can be used to position the contextual block toolbar.
-		// We only provide what is necessary, and remove the nodes again when they
-		// are no longer selected.
-		useEffect( () => {
-			if ( isSelected || isFirstMultiSelected || isLastMultiSelected ) {
-				const node = wrapper.current;
-				setBlockNodes( ( nodes ) => ( {
-					...nodes,
-					[ clientId ]: node,
-				} ) );
-				return () => {
-					setBlockNodes( ( nodes ) => omit( nodes, clientId ) );
-				};
-			}
-		}, [ isSelected, isFirstMultiSelected, isLastMultiSelected ] );
-
-		// translators: %s: Type of block (i.e. Text, Image etc)
-		const blockLabel = sprintf( __( 'Block: %s' ), blockTitle );
-
-		// Handing the focus of the block on creation and update
-
-		/**
-		 * When a block becomes selected, transition focus to an inner tabbable.
-		 */
-		const focusTabbable = () => {
-			// Focus is captured by the wrapper node, so while focus transition
-			// should only consider tabbables within editable display, since it
-			// may be the wrapper itself or a side control which triggered the
-			// focus event, don't unnecessary transition to an inner tabbable.
-			if (
-				document.activeElement &&
-				isInsideRootBlock( wrapper.current, document.activeElement )
-			) {
-				return;
+export function useBlock( ref, { __unstableIsHtml } = {} ) {
+	const onSelectionStart = useContext( Context );
+	const setBlockNodes = useContext( SetBlockNodes );
+	const {
+		clientId,
+		rootClientId,
+		isSelected,
+		isFirstMultiSelected,
+		isLastMultiSelected,
+		isMultiSelecting,
+		isNavigationMode,
+		isPartOfMultiSelection,
+		enableAnimation,
+		index,
+		className,
+		isLocked,
+		name,
+		mode,
+		blockTitle,
+		wrapperProps = {},
+	} = useContext( BlockListBlockContext );
+	const { initialPosition } = useSelect(
+		( select ) => {
+			if ( ! isSelected ) {
+				return {};
 			}
 
-			// Find all tabbables within node.
-			const textInputs = focus.tabbable
-				.find( wrapper.current )
-				.filter( isTextField )
-				// Exclude inner blocks and block appenders
-				.filter(
-					( node ) =>
-						isInsideRootBlock( wrapper.current, node ) &&
-						! node.closest( '.block-list-appender' )
-				);
+			return {
+				initialPosition: select(
+					'core/block-editor'
+				).getSelectedBlocksInitialCaretPosition(),
+			};
+		},
+		[ isSelected ]
+	);
+	const { removeBlock, insertDefaultBlock } = useDispatch(
+		'core/block-editor'
+	);
 
-			// If reversed (e.g. merge via backspace), use the last in the set of
-			// tabbables.
-			const isReverse = -1 === initialPosition;
-			const target =
-				( isReverse ? last : first )( textInputs ) || wrapper.current;
+	// Provide the selected node, or the first and last nodes of a multi-
+	// selection, so it can be used to position the contextual block toolbar.
+	// We only provide what is necessary, and remove the nodes again when they
+	// are no longer selected.
+	useEffect( () => {
+		if ( isSelected || isFirstMultiSelected || isLastMultiSelected ) {
+			const node = ref.current;
+			setBlockNodes( ( nodes ) => ( {
+				...nodes,
+				[ clientId ]: node,
+			} ) );
+			return () => {
+				setBlockNodes( ( nodes ) => omit( nodes, clientId ) );
+			};
+		}
+	}, [ isSelected, isFirstMultiSelected, isLastMultiSelected ] );
 
-			placeCaretAtHorizontalEdge( target, isReverse );
-		};
+	// translators: %s: Type of block (i.e. Text, Image etc)
+	const blockLabel = sprintf( __( 'Block: %s' ), blockTitle );
 
-		useEffect( () => {
-			if ( ! isMultiSelecting && ! isNavigationMode && isSelected ) {
-				focusTabbable();
-			}
-		}, [ isSelected, isMultiSelecting, isNavigationMode ] );
+	// Handing the focus of the block on creation and update
 
-		// Block Reordering animation
-		useMovingAnimation(
-			wrapper,
-			isSelected || isPartOfMultiSelection,
-			isSelected || isFirstMultiSelected,
-			enableAnimation,
-			index
-		);
+	/**
+	 * When a block becomes selected, transition focus to an inner tabbable.
+	 */
+	const focusTabbable = () => {
+		// Focus is captured by the wrapper node, so while focus transition
+		// should only consider tabbables within editable display, since it
+		// may be the wrapper itself or a side control which triggered the
+		// focus event, don't unnecessary transition to an inner tabbable.
+		if (
+			document.activeElement &&
+			isInsideRootBlock( ref.current, document.activeElement )
+		) {
+			return;
+		}
 
+		// Find all tabbables within node.
+		const textInputs = focus.tabbable
+			.find( ref.current )
+			.filter( isTextField )
+			// Exclude inner blocks and block appenders
+			.filter(
+				( node ) =>
+					isInsideRootBlock( ref.current, node ) &&
+					! node.closest( '.block-list-appender' )
+			);
+
+		// If reversed (e.g. merge via backspace), use the last in the set of
+		// tabbables.
+		const isReverse = -1 === initialPosition;
+		const target =
+			( isReverse ? last : first )( textInputs ) || ref.current;
+
+		placeCaretAtHorizontalEdge( target, isReverse );
+	};
+
+	useEffect( () => {
+		if ( ! isMultiSelecting && ! isNavigationMode && isSelected ) {
+			focusTabbable();
+		}
+	}, [ isSelected, isMultiSelecting, isNavigationMode ] );
+
+	// Block Reordering animation
+	useMovingAnimation(
+		ref,
+		isSelected || isPartOfMultiSelection,
+		isSelected || isFirstMultiSelected,
+		enableAnimation,
+		index
+	);
+
+	useEffect( () => {
 		/**
 		 * Interprets keydown event intent to remove or insert after block if key
 		 * event occurs on wrapper node. This can occur when the block has no text
@@ -148,12 +142,8 @@ const BlockComponent = forwardRef(
 		 *
 		 * @param {KeyboardEvent} event Keydown event.
 		 */
-		const onKeyDown = ( event ) => {
+		function onKeyDown( event ) {
 			const { keyCode, target } = event;
-
-			if ( props.onKeyDown ) {
-				props.onKeyDown( event );
-			}
 
 			if (
 				keyCode !== ENTER &&
@@ -163,7 +153,7 @@ const BlockComponent = forwardRef(
 				return;
 			}
 
-			if ( target !== wrapper.current || isTextField( target ) ) {
+			if ( target !== ref.current || isTextField( target ) ) {
 				return;
 			}
 
@@ -174,9 +164,9 @@ const BlockComponent = forwardRef(
 			} else {
 				removeBlock( clientId );
 			}
-		};
+		}
 
-		const onMouseLeave = ( { which, buttons } ) => {
+		function onMouseLeave( { which, buttons } ) {
 			// The primary button must be pressed to initiate selection. Fall back
 			// to `which` if the standard `buttons` property is falsy. There are
 			// cases where Firefox might always set `buttons` to `0`.
@@ -185,37 +175,74 @@ const BlockComponent = forwardRef(
 			if ( ( buttons || which ) === 1 ) {
 				onSelectionStart( clientId );
 			}
+		}
+
+		if ( isSelected ) {
+			// Only allow shortcuts when a blocks is selected and not locked.
+			if ( ! isLocked ) {
+				ref.current.addEventListener( 'keydown', onKeyDown );
+			}
+
+			// Only allow selection to be started from a selected block.
+			ref.current.addEventListener( 'mouseleave', onMouseLeave );
+		}
+
+		return () => {
+			if ( isSelected ) {
+				if ( ! isLocked ) {
+					ref.current.removeEventListener( 'keydown', onKeyDown );
+				}
+
+				ref.current.removeEventListener( 'mouseleave', onMouseLeave );
+			}
 		};
+	}, [
+		isSelected,
+		isLocked,
+		insertDefaultBlock,
+		removeBlock,
+		onSelectionStart,
+	] );
 
-		const htmlSuffix =
-			mode === 'html' && ! __unstableIsHtml ? '-visual' : '';
-		const blockElementId = `block-${ clientId }${ htmlSuffix }`;
+	const htmlSuffix = mode === 'html' && ! __unstableIsHtml ? '-visual' : '';
 
+	return {
+		...wrapperProps,
+		id: `block-${ clientId }${ htmlSuffix }`,
+		tabIndex: 0,
+		role: 'group',
+		'aria-label': blockLabel,
+		'data-block': clientId,
+		'data-type': name,
+		'data-title': blockTitle,
+		className: classnames( 'wp-block', className, wrapperProps.className ),
+	};
+}
+
+const BlockComponent = forwardRef(
+	(
+		{ children, tagName: TagName = 'div', __unstableIsHtml, ...props },
+		wrapper
+	) => {
+		const fallbackRef = useRef();
+		wrapper = wrapper || fallbackRef;
+		const wrapperProps = useBlock( wrapper, { __unstableIsHtml } );
+		const isAligned = wrapperProps && !! wrapperProps[ 'data-align' ];
 		const blockWrapper = (
 			<TagName
 				// Overrideable props.
-				aria-label={ blockLabel }
-				role="group"
-				{ ...omit( wrapperProps, [ 'data-align' ] ) }
+				aria-label={ wrapperProps[ 'aria-label' ] }
+				role={ wrapperProps.role }
 				{ ...props }
-				id={ blockElementId }
+				{ ...omit( wrapperProps, [ 'data-align' ] ) }
 				ref={ wrapper }
 				className={ classnames(
-					className,
 					props.className,
-					wrapperProps && wrapperProps.className,
-					! isAligned && 'wp-block'
+					wrapperProps.className,
+					{ 'wp-block': ! isAligned }
 				) }
-				data-block={ clientId }
-				data-type={ name }
-				data-title={ blockTitle }
-				// Only allow shortcuts when a blocks is selected and not locked.
-				onKeyDown={ isSelected && ! isLocked ? onKeyDown : undefined }
-				// Only allow selection to be started from a selected block.
-				onMouseLeave={ isSelected ? onMouseLeave : undefined }
-				tabIndex="0"
 				style={ {
-					...( wrapperProps ? wrapperProps.style : {} ),
+					...( wrapperProps.style || {} ),
 					...( props.style || {} ),
 				} }
 			>

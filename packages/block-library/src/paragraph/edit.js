@@ -13,7 +13,7 @@ import {
 	BlockControls,
 	InspectorControls,
 	RichText,
-	__experimentalBlock as Block,
+	__experimentalUseBlock as useBlock,
 	getFontSize,
 	__experimentalUseEditorFeature as useEditorFeature,
 } from '@wordpress/block-editor';
@@ -107,6 +107,7 @@ function ParagraphBlock( {
 		style,
 	} = attributes;
 	const ref = useRef();
+	const blockProps = useBlock( ref );
 	const [ isDropCapEnabled, dropCapMinimumHeight ] = useDropCap(
 		dropCap,
 		fontSize,
@@ -157,12 +158,7 @@ function ParagraphBlock( {
 			<RichText
 				ref={ ref }
 				identifier="content"
-				tagName={ Block.p }
-				className={ classnames( {
-					'has-drop-cap': dropCap,
-					[ `has-text-align-${ align }` ]: align,
-				} ) }
-				style={ styles }
+				tagName="p"
 				value={ content }
 				onChange={ ( newContent ) =>
 					setAttributes( { content: newContent } )
@@ -193,6 +189,12 @@ function ParagraphBlock( {
 				}
 				__unstableEmbedURLOnPaste
 				__unstableAllowPrefixTransformations
+				{ ...blockProps }
+				className={ classnames( blockProps.className, {
+					'has-drop-cap': dropCap,
+					[ `has-text-align-${ align }` ]: align,
+				} ) }
+				style={ { ...blockProps.style, ...styles } }
 			/>
 		</>
 	);
