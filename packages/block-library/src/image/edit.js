@@ -29,7 +29,7 @@ import {
 	MediaPlaceholder,
 	MediaReplaceFlow,
 	RichText,
-	__experimentalBlock as Block,
+	__experimentalUseBlock as useBlock,
 	__experimentalImageSizeControl as ImageSizeControl,
 	__experimentalImageURLInputUI as ImageURLInputUI,
 } from '@wordpress/block-editor';
@@ -120,6 +120,7 @@ export function ImageEdit( {
 	onReplace,
 } ) {
 	const ref = useRef();
+	const blockProps = useBlock( ref );
 	const { image, maxWidth, isRTL, imageSizes, mediaUpload } = useSelect(
 		( select ) => {
 			const { getMedia } = select( 'core' );
@@ -408,7 +409,7 @@ export function ImageEdit( {
 		return (
 			<>
 				{ controls }
-				<Block.div>{ mediaPlaceholder }</Block.div>
+				<figure { ...blockProps }>{ mediaPlaceholder }</figure>
 			</>
 		);
 	}
@@ -594,7 +595,10 @@ export function ImageEdit( {
 	return (
 		<>
 			{ controls }
-			<Block.figure ref={ ref } className={ classes }>
+			<figure
+				{ ...blockProps }
+				className={ classnames( blockProps.className, classes ) }
+			>
 				{ img }
 				{ ( ! RichText.isEmpty( caption ) || isSelected ) && (
 					<RichText
@@ -613,7 +617,7 @@ export function ImageEdit( {
 					/>
 				) }
 				{ mediaPlaceholder }
-			</Block.figure>
+			</figure>
 		</>
 	);
 }
