@@ -72,7 +72,11 @@ export default compose( [
 		};
 	} ),
 	withDispatch( ( dispatch, props, { select } ) => {
-		const { clientIds, blocks, updateSelection } = props;
+		const {
+			clientIds,
+			blocks,
+			__experimentalUpdateSelection: updateSelection,
+		} = props;
 
 		const {
 			removeBlocks,
