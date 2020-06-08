@@ -56,6 +56,7 @@ export default function BlockNavigationBranch( props ) {
 						<BlockNavigationBlock
 							block={ block }
 							onClick={ () => selectBlock( clientId ) }
+							selectBlock={ selectBlock }
 							isSelected={ selectedBlockClientId === clientId }
 							level={ level }
 							position={ position }

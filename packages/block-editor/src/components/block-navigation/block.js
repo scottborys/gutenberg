@@ -8,7 +8,7 @@ import classnames from 'classnames';
  */
 import { __experimentalTreeGridCell as TreeGridCell } from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
-import { useState } from '@wordpress/element';
+import { useState, useRef, useEffect } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -27,6 +27,7 @@ export default function BlockNavigationBlock( {
 	block,
 	onClick,
 	isSelected,
+	selectBlock,
 	position,
 	level,
 	rowCount,
@@ -34,6 +35,7 @@ export default function BlockNavigationBlock( {
 	terminatedLevels,
 	path,
 } ) {
+	const cellRef = useRef( null );
 	const [ isHovered, setIsHovered ] = useState( false );
 	const [ isFocused, setIsFocused ] = useState( false );
 	const { clientId } = block;
@@ -54,6 +56,11 @@ export default function BlockNavigationBlock( {
 		'block-editor-block-navigation-block__menu-cell',
 		{ 'is-visible': hasVisibleMovers }
 	);
+	useEffect( () => {
+		if ( isSelected ) {
+			cellRef.current.focus();
+		}
+	}, [ isSelected ] );
 
 	return (
 		<BlockNavigationLeaf
@@ -72,6 +79,7 @@ export default function BlockNavigationBlock( {
 			<TreeGridCell
 				className="block-editor-block-navigation-block__contents-cell"
 				colSpan={ hasRenderedMovers ? undefined : 3 }
+				ref={ cellRef }
 			>
 				{ ( { ref, tabIndex, onFocus } ) => (
 					<div className="block-editor-block-navigation-block__contents-container">
@@ -135,6 +143,8 @@ export default function BlockNavigationBlock( {
 								onFocus,
 							} }
 							disableOpenOnArrowDown
+							updateSelection={ false }
+							selectBlock={ selectBlock }
 						/>
 					) }
 				</TreeGridCell>

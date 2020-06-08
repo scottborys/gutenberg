@@ -72,7 +72,7 @@ export default compose( [
 		};
 	} ),
 	withDispatch( ( dispatch, props, { select } ) => {
-		const { clientIds, blocks } = props;
+		const { clientIds, blocks, updateSelection } = props;
 
 		const {
 			removeBlocks,
@@ -84,16 +84,16 @@ export default compose( [
 
 		return {
 			onDuplicate() {
-				return duplicateBlocks( clientIds );
+				return duplicateBlocks( clientIds, updateSelection );
 			},
 			onRemove() {
-				removeBlocks( clientIds );
+				return removeBlocks( clientIds, updateSelection );
 			},
 			onInsertBefore() {
-				insertBeforeBlock( first( castArray( clientIds ) ) );
+				return insertBeforeBlock( first( castArray( clientIds ) ) );
 			},
 			onInsertAfter() {
-				insertAfterBlock( last( castArray( clientIds ) ) );
+				return insertAfterBlock( last( castArray( clientIds ) ) );
 			},
 			onGroup() {
 				if ( ! blocks.length ) {
