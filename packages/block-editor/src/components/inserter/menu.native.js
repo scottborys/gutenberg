@@ -164,6 +164,11 @@ export class InserterMenu extends Component {
 											columnProperties.itemWidth && {
 												width:
 													columnProperties.itemWidth,
+											}, // TODO (Seperate to item component)
+											item.id === 'clipboard' && {
+												backgroundColor: 'transparent',
+												borderColor: '#e8e8e8',
+												borderWidth: 1,
 											},
 										] }
 									>
@@ -176,7 +181,9 @@ export class InserterMenu extends Component {
 										</View>
 									</View>
 									<Text style={ modalItemLabelStyle }>
-										{ item.title }
+										{ item.id === 'clipboard' // TODO (Seperate to item component)
+											? 'Copied block'
+											: item.title }
 									</Text>
 								</View>
 							</TouchableHighlight>
@@ -197,7 +204,8 @@ export default compose(
 			getBlockSelectionEnd,
 			getSettings,
 		} = select( 'core/block-editor' );
-		const { getChildBlockNames } = select( 'core/blocks' );
+		const { getChildBlockNames, getBlockType } = select( 'core/blocks' );
+		const { getClipboard } = select( 'core/editor' );
 
 		let destinationRootClientId = rootClientId;
 		if ( ! destinationRootClientId && ! clientId && ! isAppender ) {
@@ -214,10 +222,21 @@ export default compose(
 		const {
 			__experimentalShouldInsertAtTheTop: shouldInsertAtTheTop,
 		} = getSettings();
+		const clipboard = getClipboard();
 
 		return {
 			rootChildBlocks: getChildBlockNames( destinationRootBlockName ),
-			items: getInserterItems( destinationRootClientId ),
+			items: clipboard
+				? [
+						{
+							id: 'clipboard',
+							...getBlockType( clipboard.name ),
+							initialAttributes: clipboard.attributes,
+							innerBlocks: clipboard.innerBlocks,
+						},
+						...getInserterItems( destinationRootClientId ),
+				  ]
+				: getInserterItems( destinationRootClientId ),
 			destinationRootClientId,
 			shouldInsertAtTheTop,
 		};
@@ -262,9 +281,13 @@ export default compose(
 			},
 			hideInsertionPoint,
 			onSelect( item ) {
-				const { name, initialAttributes } = item;
+				const { name, initialAttributes, innerBlocks } = item;
 
-				const insertedBlock = createBlock( name, initialAttributes );
+				const insertedBlock = createBlock(
+					name,
+					initialAttributes,
+					innerBlocks
+				);
 
 				insertBlock(
 					insertedBlock,

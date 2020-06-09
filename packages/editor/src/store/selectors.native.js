@@ -35,7 +35,7 @@ export function isPostTitleSelected( state ) {
  */
 export const isEditedPostAutosaveable = createRegistrySelector(
 	() =>
-		function( state ) {
+		function ( state ) {
 			// A post must contain a title, an excerpt, or non-empty content to be valid for autosaving.
 			if ( ! isEditedPostSaveable( state ) ) {
 				return false;
@@ -56,3 +56,14 @@ export const isEditedPostAutosaveable = createRegistrySelector(
 			return false;
 		}
 );
+
+/**
+ * Returns the current clipboard data.
+ *
+ * @param {Object} state Global application state.
+ *
+ * @return {Object} Current clipboard data.
+ */
+export function getClipboard( state ) {
+	return state.clipboard;
+}
