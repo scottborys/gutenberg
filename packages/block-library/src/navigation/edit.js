@@ -194,53 +194,61 @@ function Navigation( {
 	// UI State: rendered Block UI
 	return (
 		<Fragment>
-			<BlockControls>
-				<Toolbar
-					icon={
-						attributes.itemsJustification
-							? navIcons[
-									`justify${ upperFirst(
-										attributes.itemsJustification
-									) }Icon`
-							  ]
-							: navIcons.justifyLeftIcon
-					}
-					label={ __( 'Change items justification' ) }
-					isCollapsed
-					controls={ [
-						{
-							icon: navIcons.justifyLeftIcon,
-							title: __( 'Justify items left' ),
-							isActive: 'left' === attributes.itemsJustification,
-							onClick: handleItemsAlignment( 'left' ),
-						},
-						{
-							icon: navIcons.justifyCenterIcon,
-							title: __( 'Justify items center' ),
-							isActive:
-								'center' === attributes.itemsJustification,
-							onClick: handleItemsAlignment( 'center' ),
-						},
-						{
-							icon: navIcons.justifyRightIcon,
-							title: __( 'Justify items right' ),
-							isActive: 'right' === attributes.itemsJustification,
-							onClick: handleItemsAlignment( 'right' ),
-						},
-					] }
-				/>
-				{ ! isNavigationManagementScreen && (
-					<ToolbarGroup>{ navigatorToolbarButton }</ToolbarGroup>
-				) }
+			{ ! isNavigationManagementScreen && (
+				<Fragment>
+					<BlockControls>
+						<Toolbar
+							icon={
+								attributes.itemsJustification
+									? navIcons[
+											`justify${ upperFirst(
+												attributes.itemsJustification
+											) }Icon`
+									  ]
+									: navIcons.justifyLeftIcon
+							}
+							label={ __( 'Change items justification' ) }
+							isCollapsed
+							controls={ [
+								{
+									icon: navIcons.justifyLeftIcon,
+									title: __( 'Justify items left' ),
+									isActive:
+										'left' ===
+										attributes.itemsJustification,
+									onClick: handleItemsAlignment( 'left' ),
+								},
+								{
+									icon: navIcons.justifyCenterIcon,
+									title: __( 'Justify items center' ),
+									isActive:
+										'center' ===
+										attributes.itemsJustification,
+									onClick: handleItemsAlignment( 'center' ),
+								},
+								{
+									icon: navIcons.justifyRightIcon,
+									title: __( 'Justify items right' ),
+									isActive:
+										'right' ===
+										attributes.itemsJustification,
+									onClick: handleItemsAlignment( 'right' ),
+								},
+							] }
+						/>
+						<ToolbarGroup>{ navigatorToolbarButton }</ToolbarGroup>
 
-				<BlockColorsStyleSelector
-					TextColor={ TextColor }
-					BackgroundColor={ BackgroundColor }
-				>
-					{ ColorPanel }
-				</BlockColorsStyleSelector>
-			</BlockControls>
-			{ navigatorModal }
+						<BlockColorsStyleSelector
+							TextColor={ TextColor }
+							BackgroundColor={ BackgroundColor }
+						>
+							{ ColorPanel }
+						</BlockColorsStyleSelector>
+					</BlockControls>
+					{ navigatorModal }
+				</Fragment>
+			) }
+
 			<InspectorControls>
 				<PanelBody title={ __( 'Text settings' ) }>
 					<FontSizePicker

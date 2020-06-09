@@ -35,27 +35,28 @@ export default function BlockEditorArea( {
 	menuId,
 	saveBlocks,
 } ) {
-	const { rootBlockId, isNavigationModeActive, hasSelectedBlock } = useSelect(
-		( select ) => {
-			const {
-				isNavigationMode,
-				getBlockSelectionStart,
-				getBlock,
-				getBlocks,
-			} = select( 'core/block-editor' );
+	const {
+		rootBlockId,
+		isNavigationModeActive,
+		selectionStartClientId,
+		hasSelectedBlock,
+	} = useSelect( ( select ) => {
+		const {
+			isNavigationMode,
+			getBlockSelectionStart,
+			getBlock,
+			getBlocks,
+		} = select( 'core/block-editor' );
 
-			const selectionStartClientId = getBlockSelectionStart();
-
-			return {
-				rootBlockId: getBlocks()[ 0 ]?.clientId,
-				isNavigationModeActive: isNavigationMode(),
-				hasSelectedBlock:
-					!! selectionStartClientId &&
-					!! getBlock( selectionStartClientId ),
-			};
-		},
-		[]
-	);
+		return {
+			rootBlockId: getBlocks()[ 0 ]?.clientId,
+			isNavigationModeActive: isNavigationMode(),
+			selectionStartClientId: getBlockSelectionStart(),
+			hasSelectedBlock:
+				!! selectionStartClientId &&
+				!! getBlock( selectionStartClientId ),
+		};
+	}, [] );
 
 	// Select the navigation block when it becomes available
 	const { selectBlock } = useDispatch( 'core/block-editor' );
@@ -86,7 +87,10 @@ export default function BlockEditorArea( {
 					) }
 					aria-label={ __( 'Block tools' ) }
 				>
-					{ hasSelectedBlock && <BlockToolbar hideDragHandle /> }
+					{ hasSelectedBlock &&
+						selectionStartClientId !== rootBlockId && (
+							<BlockToolbar hideDragHandle />
+						) }
 				</NavigableToolbar>
 				<Popover.Slot name="block-toolbar" />
 				<WritingFlow>
