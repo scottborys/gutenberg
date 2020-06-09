@@ -20,8 +20,8 @@ export default function useMenuItems( query ) {
 	const menuItems = useFetchMenuItems( query );
 	const saveMenuItems = useSaveMenuItems( query );
 	const { createMissingMenuItems, onCreated } = useCreateMissingMenuItems();
-	const eventuallySaveMenuItems = ( blocks, menuItemsRef ) =>
-		onCreated( () => saveMenuItems( blocks, menuItemsRef ) );
+	const eventuallySaveMenuItems = ( blocks ) =>
+		onCreated( () => saveMenuItems( blocks ) );
 	return { menuItems, eventuallySaveMenuItems, createMissingMenuItems };
 }
 
@@ -48,16 +48,35 @@ export function useFetchMenuItems( query ) {
 	return resolvedMenuItems;
 }
 
+export function useMenuItemsByClientId( query ) {
+	const menuItems = useFetchMenuItems( query );
+	const { clientIdsByMenuId } = useSelect( ( select ) => ( {
+		clientIdsByMenuId: select(
+			'core/edit-navigation'
+		).getClientIdsByMenuId(),
+	} ) );
+
+	const result = {};
+	for ( const menuItem in menuItems ) {
+		const clientId = clientIdsByMenuId[ menuItem.id ];
+		if ( clientId ) {
+			result[ clientId ] = menuItem;
+		}
+	}
+	return result;
+}
+
 export function useSaveMenuItems( query ) {
 	const { receiveEntityRecords } = useDispatch( 'core' );
 	const { createSuccessNotice, createErrorNotice } = useDispatch(
 		'core/notices'
 	);
+	const menuItemsByClientId = useMenuItemsByClientId( query );
 
-	const saveBlocks = async ( blocks, menuItemsRef ) => {
+	const saveBlocks = async ( blocks ) => {
 		const result = await batchSave(
 			query.menus,
-			menuItemsRef,
+			menuItemsByClientId,
 			blocks[ 0 ]
 		);
 
@@ -76,7 +95,7 @@ export function useSaveMenuItems( query ) {
 	return saveBlocks;
 }
 
-async function batchSave( menuId, menuItemsRef, navigationBlock ) {
+async function batchSave( menuId, menuItemsByClientId, navigationBlock ) {
 	const { nonce, stylesheet } = await apiFetch( {
 		path: '/__experimental/customizer-nonces/get-save-nonce',
 	} );
@@ -95,7 +114,7 @@ async function batchSave( menuId, menuItemsRef, navigationBlock ) {
 		computeCustomizedAttribute(
 			navigationBlock.innerBlocks,
 			menuId,
-			menuItemsRef
+			menuItemsByClientId
 		)
 	);
 
@@ -106,7 +125,7 @@ async function batchSave( menuId, menuItemsRef, navigationBlock ) {
 	} );
 }
 
-function computeCustomizedAttribute( blocks, menuId, menuItemsRef ) {
+function computeCustomizedAttribute( blocks, menuId, menuItemsByClientId ) {
 	const blocksList = blocksTreeToFlatList( blocks );
 	const dataList = blocksList.map( ( { block, parentId, position } ) =>
 		linkBlockToRequestItem( block, parentId, position )
@@ -117,8 +136,8 @@ function computeCustomizedAttribute( blocks, menuId, menuItemsRef ) {
 	const dataObject = keyBy( dataList, computeKey );
 
 	// Deleted menu items should be sent as false, e.g. { "nav_menu_item[13]": false }
-	for ( const clientId in menuItemsRef.current ) {
-		const key = computeKey( menuItemsRef.current[ clientId ] );
+	for ( const clientId in menuItemsByClientId ) {
+		const key = computeKey( menuItemsByClientId[ clientId ] );
 		if ( ! ( key in dataObject ) ) {
 			dataObject[ key ] = false;
 		}
@@ -155,7 +174,7 @@ function computeCustomizedAttribute( blocks, menuId, menuItemsRef ) {
 	}
 
 	function getMenuItemForBlock( block ) {
-		return omit( menuItemsRef.current[ block.clientId ] || {}, '_links' );
+		return omit( menuItemsByClientId[ block.clientId ] || {}, '_links' );
 	}
 }
 

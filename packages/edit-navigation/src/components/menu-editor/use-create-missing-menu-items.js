@@ -3,6 +3,7 @@
  */
 import apiFetch from '@wordpress/api-fetch';
 import { useRef, useCallback } from '@wordpress/element';
+import { useSelect, useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -20,30 +21,39 @@ import PromiseQueue from './promise-queue';
  * @return {function(*=): void} Function registering it's argument to be called once all menuItems are created.
  */
 export default function useCreateMissingMenuItems() {
-	const promiseQueueRef = useRef( new PromiseQueue() );
-	const enqueuedBlocksIds = useRef( [] );
-	const createMissingMenuItems = ( blocks, menuItemsRef ) => {
+	const promiseQueueRef = useRef( new PromiseQueue( 5 ) );
+	const enqueuedClientIds = useRef( [] );
+	const menuItemIdsByClientId = useSelect( ( select ) =>
+		select( 'core/edit-navigation' ).getMenuItemIdsByClientId()
+	);
+	const { assignMenuItemIdToClientId } = useDispatch(
+		'core/edit-navigation'
+	);
+
+	// Remove processed clientIds from the list of enqueued ids
+	enqueuedClientIds.current = enqueuedClientIds.current.filter(
+		( clientId ) => ! ( clientId in menuItemIdsByClientId )
+	);
+
+	const createMissingMenuItems = ( blocks ) => {
 		for ( const { clientId, name } of flattenBlocks( blocks ) ) {
 			// No need to create menuItems for the wrapping navigation block
 			if ( name === 'core/navigation' ) {
 				continue;
 			}
 			// Menu item was already created
-			if ( clientId in menuItemsRef.current ) {
+			if ( clientId in menuItemIdsByClientId ) {
 				continue;
 			}
 			// Menu item already in the queue
-			if ( enqueuedBlocksIds.current.includes( clientId ) ) {
+			if ( enqueuedClientIds.current.includes( clientId ) ) {
 				continue;
 			}
-			enqueuedBlocksIds.current.push( clientId );
+			enqueuedClientIds.current.push( clientId );
 			promiseQueueRef.current.enqueue( () =>
-				createDraftMenuItem( clientId ).then( ( menuItem ) => {
-					menuItemsRef.current[ clientId ] = menuItem;
-					enqueuedBlocksIds.current.splice(
-						enqueuedBlocksIds.current.indexOf( clientId )
-					);
-				} )
+				createDraftMenuItem( clientId ).then( ( menuItem ) =>
+					assignMenuItemIdToClientId( clientId, menuItem.id )
+				)
 			);
 		}
 	};

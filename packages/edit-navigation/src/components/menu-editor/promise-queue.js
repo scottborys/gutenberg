@@ -15,7 +15,7 @@ export default class PromiseQueue {
 	}
 
 	run() {
-		while ( this.queue.length && this.active.length <= this.concurrency ) {
+		while ( this.queue.length && this.active.length < this.concurrency ) {
 			const action = this.queue.shift();
 			const promise = action().then( () => {
 				this.active.splice( this.active.indexOf( promise ), 1 );

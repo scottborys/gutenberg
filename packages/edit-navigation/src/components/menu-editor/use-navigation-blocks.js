@@ -7,6 +7,7 @@ import { keyBy, groupBy, sortBy } from 'lodash';
  * WordPress dependencies
  */
 import { createBlock } from '@wordpress/blocks';
+import { useDispatch, useSelect } from '@wordpress/data';
 import { useState, useRef, useEffect } from '@wordpress/element';
 
 /**
@@ -17,6 +18,9 @@ import { flattenBlocks } from './helpers';
 export default function useNavigationBlocks( menuItems ) {
 	const [ blocks, setBlocks ] = useState( [] );
 	const menuItemsRef = useRef( {} );
+	const { setMenuItemsToClientIdMapping } = useDispatch(
+		'core/edit-navigation'
+	);
 
 	// Refresh our model whenever menuItems change
 	useEffect( () => {
@@ -32,6 +36,7 @@ export default function useNavigationBlocks( menuItems ) {
 
 		setBlocks( [ navigationBlock ] );
 		menuItemsRef.current = clientIdToMenuItemMapping;
+		setTimeout( () => setMenuItemsToClientIdMapping( clientIdToMenuItemMapping ) );
 	}, [ menuItems ] );
 
 	return {
@@ -52,7 +57,7 @@ const menuItemsToBlocks = (
 	);
 
 	const itemsByParentID = groupBy( menuItems, 'parent' );
-	const clientIdToMenuItemMapping = {};
+	const menuItemIdByClientId = {};
 	const menuItemsToTreeOfBlocks = ( items ) => {
 		const innerBlocks = [];
 		if ( ! items ) {
@@ -72,7 +77,7 @@ const menuItemsToBlocks = (
 				menuItemInnerBlocks,
 				blocksByMenuId[ item.id ]
 			);
-			clientIdToMenuItemMapping[ linkBlock.clientId ] = item;
+			menuItemIdByClientId[ linkBlock.clientId ] = item.id;
 			innerBlocks.push( linkBlock );
 		}
 		return innerBlocks;
@@ -80,7 +85,7 @@ const menuItemsToBlocks = (
 
 	// menuItemsToTreeOfLinkBlocks takes an array of top-level menu items and recursively creates all their innerBlocks
 	const blocks = menuItemsToTreeOfBlocks( itemsByParentID[ 0 ] || [] );
-	return [ blocks, clientIdToMenuItemMapping ];
+	return [ blocks, menuItemIdByClientId ];
 };
 
 function menuItemToLinkBlock(
