@@ -15,7 +15,7 @@ import {
 import { __, sprintf } from '@wordpress/i18n';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { withInstanceId, compose } from '@wordpress/compose';
-import { moreHorizontalMobile, trash, cog } from '@wordpress/icons';
+import { moreHorizontalMobile } from '@wordpress/icons';
 import { useRef } from '@wordpress/element';
 /**
  * Internal dependencies
@@ -38,12 +38,12 @@ const BlockActionsMenu = ( {
 	getBlocksByClientId,
 	selectedBlockClientId,
 	updateClipboard,
+	duplicateBlock,
 } ) => {
 	const pickerRef = useRef();
 	const moversOptions = { keys: [ 'icon', 'actionTitle' ], blockTitle };
 
 	const {
-		icon: { backward: backwardButtonIcon, forward: forwardButtonIcon },
 		actionTitle: {
 			backward: backwardButtonTitle,
 			forward: forwardButtonTitle,
@@ -55,7 +55,6 @@ const BlockActionsMenu = ( {
 		// translators: %s: block title e.g: "Paragraph".
 		label: sprintf( __( 'Remove %s' ), blockTitle ),
 		value: 'deleteOption',
-		icon: trash,
 		separated: true,
 		disabled: isEmptyDefaultBlock,
 	};
@@ -65,14 +64,12 @@ const BlockActionsMenu = ( {
 		// translators: %s: block title e.g: "Paragraph".
 		label: sprintf( __( '%s Settings' ), blockTitle ),
 		value: 'settingsOption',
-		icon: cog,
 	};
 
 	const backwardButtonOption = {
 		id: 'backwardButtonOption',
 		label: backwardButtonTitle,
 		value: 'backwardButtonOption',
-		icon: backwardButtonIcon,
 		disabled: isFirst,
 	};
 
@@ -80,22 +77,19 @@ const BlockActionsMenu = ( {
 		id: 'forwardButtonOption',
 		label: forwardButtonTitle,
 		value: 'forwardButtonOption',
-		icon: forwardButtonIcon,
 		disabled: isLast,
 	};
 
 	const copyButtonOption = {
 		id: 'copyButtonOption',
-		label: 'Copy', // TODO
+		label: __( 'Copy' ),
 		value: 'copyButtonOption',
-		icon: forwardButtonIcon, // TODO
 	};
 
 	const duplicateButtonOption = {
 		id: 'duplicateButtonOption',
-		label: 'Duplicate', // TODO
+		label: __( 'Duplicate' ),
 		value: 'duplicateButtonOption',
-		icon: forwardButtonIcon, // TODO
 	};
 
 	const options = compact( [
@@ -127,7 +121,7 @@ const BlockActionsMenu = ( {
 				updateClipboard( copySerialized );
 				break;
 			case duplicateButtonOption.value:
-				// TODO
+				duplicateBlock();
 				break;
 		}
 	}
@@ -164,6 +158,7 @@ const BlockActionsMenu = ( {
 				destructiveButtonIndex={ options.length }
 				disabledButtonIndices={ disabledButtonIndices }
 				hideCancelButton={ Platform.OS !== 'ios' }
+				leftAlign={ true }
 				anchor={
 					anchorNodeRef ? findNodeHandle( anchorNodeRef ) : undefined
 				}
@@ -215,7 +210,7 @@ export default compose(
 		};
 	} ),
 	withDispatch( ( dispatch, { clientIds, rootClientId } ) => {
-		const { moveBlocksDown, moveBlocksUp } = dispatch(
+		const { moveBlocksDown, moveBlocksUp, duplicateBlocks } = dispatch(
 			'core/block-editor'
 		);
 		const { openGeneralSidebar } = dispatch( 'core/edit-post' );
@@ -226,6 +221,9 @@ export default compose(
 			onMoveUp: partial( moveBlocksUp, clientIds, rootClientId ),
 			openGeneralSidebar: () => openGeneralSidebar( 'edit-post/block' ),
 			updateClipboard,
+			duplicateBlock() {
+				return duplicateBlocks( clientIds );
+			},
 		};
 	} ),
 	withInstanceId

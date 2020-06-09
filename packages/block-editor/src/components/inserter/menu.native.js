@@ -1,13 +1,7 @@
 /**
  * External dependencies
  */
-import {
-	FlatList,
-	View,
-	Text,
-	TouchableHighlight,
-	Dimensions,
-} from 'react-native';
+import { FlatList, View, TouchableHighlight, Dimensions } from 'react-native';
 import { pick } from 'lodash';
 
 /**
@@ -16,17 +10,14 @@ import { pick } from 'lodash';
 import { Component } from '@wordpress/element';
 import { createBlock, rawHandler } from '@wordpress/blocks';
 import { withDispatch, withSelect } from '@wordpress/data';
-import {
-	withInstanceId,
-	compose,
-	withPreferredColorScheme,
-} from '@wordpress/compose';
-import { BottomSheet, Icon } from '@wordpress/components';
+import { withInstanceId, compose } from '@wordpress/compose';
+import { BottomSheet } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import styles from './style.scss';
+import MenuItem from './menu-item.native';
 
 const MIN_COL_NUM = 3;
 
@@ -36,6 +27,7 @@ export class InserterMenu extends Component {
 
 		this.onClose = this.onClose.bind( this );
 		this.onLayout = this.onLayout.bind( this );
+		this.renderItem = this.renderItem.bind( this );
 		this.state = {
 			numberOfColumns: MIN_COL_NUM,
 		};
@@ -100,31 +92,34 @@ export class InserterMenu extends Component {
 	}
 
 	onLayout() {
-		const columnProperties = this.calculateColumnsProperties();
-		const numberOfColumns = columnProperties.numOfColumns;
+		const {
+			numOfColumns,
+			itemWidth,
+			maxWidth,
+		} = this.calculateColumnsProperties();
+		const numberOfColumns = numOfColumns;
 
-		this.setState( { numberOfColumns } );
+		this.setState( { numberOfColumns, itemWidth, maxWidth } );
+	}
+
+	renderItem( { item } ) {
+		const { itemWidth, maxWidth } = this.state;
+		const { onSelect } = this.props;
+		return (
+			<MenuItem
+				item={ item }
+				itemWidth={ itemWidth }
+				maxWidth={ maxWidth }
+				onSelect={ onSelect }
+			/>
+		);
 	}
 
 	render() {
-		const { getStylesFromColorScheme, items, onSelect } = this.props;
+		const { items } = this.props;
 		const { numberOfColumns } = this.state;
 
 		const bottomPadding = styles.contentBottomPadding;
-		const modalIconWrapperStyle = getStylesFromColorScheme(
-			styles.modalIconWrapper,
-			styles.modalIconWrapperDark
-		);
-		const modalIconStyle = getStylesFromColorScheme(
-			styles.modalIcon,
-			styles.modalIconDark
-		);
-		const modalItemLabelStyle = getStylesFromColorScheme(
-			styles.modalItemLabel,
-			styles.modalItemLabelDark
-		);
-
-		const columnProperties = this.calculateColumnsProperties();
 
 		return (
 			<BottomSheet
@@ -145,50 +140,7 @@ export class InserterMenu extends Component {
 							<View style={ styles.rowSeparator } />
 						) }
 						keyExtractor={ ( item ) => item.name }
-						renderItem={ ( { item } ) => (
-							<TouchableHighlight
-								style={ styles.touchableArea }
-								underlayColor="transparent"
-								activeOpacity={ 0.5 }
-								accessibilityLabel={ item.title }
-								onPress={ () => onSelect( item ) }
-							>
-								<View
-									style={ [
-										styles.modalItem,
-										{ width: columnProperties.maxWidth },
-									] }
-								>
-									<View
-										style={ [
-											modalIconWrapperStyle,
-											columnProperties.itemWidth && {
-												width:
-													columnProperties.itemWidth,
-											}, // TODO (Seperate to item component)
-											item.id === 'clipboard' && {
-												backgroundColor: 'transparent',
-												borderColor: '#e8e8e8',
-												borderWidth: 1,
-											},
-										] }
-									>
-										<View style={ modalIconStyle }>
-											<Icon
-												icon={ item.icon.src }
-												fill={ modalIconStyle.fill }
-												size={ modalIconStyle.width }
-											/>
-										</View>
-									</View>
-									<Text style={ modalItemLabelStyle }>
-										{ item.id === 'clipboard' // TODO (Seperate to item component)
-											? 'Copied block'
-											: item.title }
-									</Text>
-								</View>
-							</TouchableHighlight>
-						) }
+						renderItem={ this.renderItem }
 					/>
 				</TouchableHighlight>
 			</BottomSheet>
@@ -313,6 +265,5 @@ export default compose(
 			},
 		};
 	} ),
-	withInstanceId,
-	withPreferredColorScheme
+	withInstanceId
 )( InserterMenu );
