@@ -151,7 +151,11 @@ function NavigationLinkEdit( {
 						title={ __( 'Link' ) }
 						shortcut={ displayShortcut.primary( 'k' ) }
 						onClick={ () => setIsLinkOpen( true ) }
-					/>
+					>
+						{ attributes.url }
+					</ToolbarButton>
+				</ToolbarGroup>
+				<ToolbarGroup>
 					<ToolbarButton
 						name="submenu"
 						icon={ <ToolbarSubmenuIcon /> }
