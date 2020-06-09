@@ -11,11 +11,10 @@ import {
 	AlignmentToolbar,
 	BlockControls,
 	RichText,
-	__experimentalUseBlock as useBlock,
+	__experimentalUseBlockProps as useBlockProps,
 } from '@wordpress/block-editor';
 import { BlockQuotation } from '@wordpress/components';
 import { createBlock } from '@wordpress/blocks';
-import { useRef } from '@wordpress/element';
 
 export default function QuoteEdit( {
 	attributes,
@@ -26,8 +25,6 @@ export default function QuoteEdit( {
 	className,
 	insertBlocksAfter,
 } ) {
-	const ref = useRef();
-	const blockProps = useBlock( ref );
 	const { align, value, citation } = attributes;
 
 	return (
@@ -41,10 +38,10 @@ export default function QuoteEdit( {
 				/>
 			</BlockControls>
 			<BlockQuotation
-				ref={ ref }
-				{ ...blockProps }
-				className={ classnames( blockProps.className, className, {
-					[ `has-text-align-${ align }` ]: align,
+				{ ...useBlockProps( {
+					className: classnames( className, {
+						[ `has-text-align-${ align }` ]: align,
+					} ),
 				} ) }
 			>
 				<RichText

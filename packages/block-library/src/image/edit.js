@@ -29,7 +29,7 @@ import {
 	MediaPlaceholder,
 	MediaReplaceFlow,
 	RichText,
-	__experimentalUseBlock as useBlock,
+	__experimentalUseBlockProps as useBlockProps,
 	__experimentalImageSizeControl as ImageSizeControl,
 	__experimentalImageURLInputUI as ImageURLInputUI,
 } from '@wordpress/block-editor';
@@ -120,7 +120,7 @@ export function ImageEdit( {
 	onReplace,
 } ) {
 	const ref = useRef();
-	const blockProps = useBlock( ref );
+	const blockProps = useBlockProps( { ref } );
 	const { image, maxWidth, isRTL, imageSizes, mediaUpload } = useSelect(
 		( select ) => {
 			const { getMedia } = select( 'core' );

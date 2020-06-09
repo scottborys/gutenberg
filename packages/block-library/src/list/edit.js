@@ -7,7 +7,7 @@ import {
 	RichText,
 	BlockControls,
 	RichTextShortcut,
-	__experimentalUseBlock as useBlock,
+	__experimentalUseBlockProps as useBlockProps,
 } from '@wordpress/block-editor';
 import { ToolbarGroup } from '@wordpress/components';
 import {
@@ -30,7 +30,6 @@ import {
 	formatOutdentRTL,
 } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
-import { useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -45,8 +44,6 @@ export default function ListEdit( {
 	onReplace,
 	isSelected,
 } ) {
-	const ref = useRef();
-	const blockProps = useBlock( ref );
 	const { ordered, values, type, reversed, start } = attributes;
 	const tagName = ordered ? 'ol' : 'ul';
 
@@ -181,8 +178,7 @@ export default function ListEdit( {
 				start={ start }
 				reversed={ reversed }
 				type={ type }
-				ref={ ref }
-				{ ...blockProps }
+				{ ...useBlockProps() }
 			>
 				{ controls }
 			</RichText>

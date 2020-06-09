@@ -22,7 +22,23 @@ import { Context, SetBlockNodes } from './root-container';
 import { BlockListBlockContext } from './block';
 import ELEMENTS from './block-wrapper-elements';
 
-export function useBlock( ref, { __unstableIsHtml } = {} ) {
+/**
+ * This hook is used to lighly mark an element as a block element. Call this
+ * hook and pass the returned props to the element to mark as a block. If you
+ * define a ref for the element, it is important to pass the ref to this hook,
+ * which the hooks in turn will pass to the component through the props it
+ * returns. Optionally, you can also pass any other props through this hook, and
+ * they will be merged and returned.
+ *
+ * @param {Object} props   Optional. Props to pass to the element. Must contain
+ *                         the ref if one is defined.
+ * @param {Object} options Options for internal use only.
+ *
+ * @return {Object} Props to pass to the element to mark as a block.
+ */
+export function useBlockProps( props = {}, { __unstableIsHtml } = {} ) {
+	const fallbackRef = useRef();
+	const ref = props.ref || fallbackRef;
 	const onSelectionStart = useContext( Context );
 	const setBlockNodes = useContext( SetBlockNodes );
 	const {
@@ -208,6 +224,8 @@ export function useBlock( ref, { __unstableIsHtml } = {} ) {
 
 	return {
 		...wrapperProps,
+		...props,
+		ref,
 		id: `block-${ clientId }${ htmlSuffix }`,
 		tabIndex: 0,
 		role: 'group',
@@ -215,7 +233,13 @@ export function useBlock( ref, { __unstableIsHtml } = {} ) {
 		'data-block': clientId,
 		'data-type': name,
 		'data-title': blockTitle,
-		className: classnames( 'wp-block', className, wrapperProps.className ),
+		className: classnames(
+			'wp-block',
+			className,
+			props.className,
+			wrapperProps.className
+		),
+		style: { ...wrapperProps.style, ...props.style },
 	};
 }
 
@@ -224,9 +248,10 @@ const BlockComponent = forwardRef(
 		{ children, tagName: TagName = 'div', __unstableIsHtml, ...props },
 		wrapper
 	) => {
-		const fallbackRef = useRef();
-		wrapper = wrapper || fallbackRef;
-		const wrapperProps = useBlock( wrapper, { __unstableIsHtml } );
+		const wrapperProps = useBlockProps(
+			{ ref: wrapper },
+			{ __unstableIsHtml }
+		);
 		const isAligned = wrapperProps && !! wrapperProps[ 'data-align' ];
 		const blockWrapper = (
 			<TagName
@@ -235,7 +260,6 @@ const BlockComponent = forwardRef(
 				role={ wrapperProps.role }
 				{ ...props }
 				{ ...omit( wrapperProps, [ 'data-align' ] ) }
-				ref={ wrapper }
 				className={ classnames(
 					props.className,
 					wrapperProps.className,
