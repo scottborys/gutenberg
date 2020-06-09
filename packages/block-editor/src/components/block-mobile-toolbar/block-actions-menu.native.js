@@ -7,7 +7,11 @@ import { partial, first, castArray, last, compact } from 'lodash';
  * WordPress dependencies
  */
 import { ToolbarButton, Picker } from '@wordpress/components';
-import { getBlockType, getDefaultBlockName } from '@wordpress/blocks';
+import {
+	getBlockType,
+	getDefaultBlockName,
+	serialize,
+} from '@wordpress/blocks';
 import { __, sprintf } from '@wordpress/i18n';
 import { withDispatch, withSelect } from '@wordpress/data';
 import { withInstanceId, compose } from '@wordpress/compose';
@@ -119,7 +123,8 @@ const BlockActionsMenu = ( {
 				break;
 			case copyButtonOption.value:
 				const copyBlock = getBlocksByClientId( selectedBlockClientId );
-				updateClipboard( copyBlock[ 0 ] );
+				const copySerialized = serialize( copyBlock );
+				updateClipboard( copySerialized );
 				break;
 			case duplicateButtonOption.value:
 				// TODO

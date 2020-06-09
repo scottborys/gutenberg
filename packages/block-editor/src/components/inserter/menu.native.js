@@ -8,12 +8,13 @@ import {
 	TouchableHighlight,
 	Dimensions,
 } from 'react-native';
+import { pick } from 'lodash';
 
 /**
  * WordPress dependencies
  */
 import { Component } from '@wordpress/element';
-import { createBlock } from '@wordpress/blocks';
+import { createBlock, rawHandler } from '@wordpress/blocks';
 import { withDispatch, withSelect } from '@wordpress/data';
 import {
 	withInstanceId,
@@ -223,6 +224,9 @@ export default compose(
 			__experimentalShouldInsertAtTheTop: shouldInsertAtTheTop,
 		} = getSettings();
 		const clipboard = getClipboard();
+		const clipboardBlock = clipboard
+			? rawHandler( { HTML: clipboard } )[ 0 ]
+			: null;
 
 		return {
 			rootChildBlocks: getChildBlockNames( destinationRootBlockName ),
@@ -230,9 +234,12 @@ export default compose(
 				? [
 						{
 							id: 'clipboard',
-							...getBlockType( clipboard.name ),
-							initialAttributes: clipboard.attributes,
-							innerBlocks: clipboard.innerBlocks,
+							...pick( getBlockType( clipboardBlock.name ), [
+								'name',
+								'icon',
+							] ),
+							initialAttributes: clipboardBlock.attributes,
+							innerBlocks: clipboardBlock.innerBlocks,
 						},
 						...getInserterItems( destinationRootClientId ),
 				  ]
