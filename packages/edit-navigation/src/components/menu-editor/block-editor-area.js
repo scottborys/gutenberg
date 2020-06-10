@@ -38,7 +38,7 @@ export default function BlockEditorArea( {
 	const {
 		rootBlockId,
 		isNavigationModeActive,
-		selectionStartClientId,
+		isRootBlockSelected,
 		hasSelectedBlock,
 	} = useSelect( ( select ) => {
 		const {
@@ -47,13 +47,18 @@ export default function BlockEditorArea( {
 			getBlock,
 			getBlocks,
 		} = select( 'core/block-editor' );
-		const firstSelectedBlockId = getBlockSelectionStart();
+		const selectionStartClientId = getBlockSelectionStart();
+		const rootClientId = getBlocks()[ 0 ]?.clientId;
 		return {
-			rootBlockId: getBlocks()[ 0 ]?.clientId,
+			selectionStartClientId,
+			rootBlockId: rootClientId,
 			isNavigationModeActive: isNavigationMode(),
-			selectionStartClientId: firstSelectedBlockId,
+			isRootBlockSelected:
+				!! selectionStartClientId &&
+				rootClientId === selectionStartClientId,
 			hasSelectedBlock:
-				!! firstSelectedBlockId && !! getBlock( firstSelectedBlockId ),
+				!! selectionStartClientId &&
+				!! getBlock( selectionStartClientId ),
 		};
 	}, [] );
 
@@ -86,10 +91,9 @@ export default function BlockEditorArea( {
 					) }
 					aria-label={ __( 'Block tools' ) }
 				>
-					{ hasSelectedBlock &&
-						selectionStartClientId !== rootBlockId && (
-							<BlockToolbar hideDragHandle />
-						) }
+					{ hasSelectedBlock && ! isRootBlockSelected && (
+						<BlockToolbar hideDragHandle />
+					) }
 				</NavigableToolbar>
 				<Popover.Slot name="block-toolbar" />
 				<WritingFlow>
