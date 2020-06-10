@@ -9,10 +9,7 @@ import Cropper from 'react-easy-crop';
  * WordPress dependencies
  */
 
-import {
-	BlockControls,
-	__experimentalBlock as Block,
-} from '@wordpress/block-editor';
+import { BlockControls } from '@wordpress/block-editor';
 import { useState } from '@wordpress/element';
 import {
 	rotateLeft as rotateLeftIcon,
@@ -21,12 +18,12 @@ import {
 	flipVertical as flipVerticalIcon,
 	crop as cropIcon,
 	aspectRatio as aspectRatioIcon,
+	chevronLeft as chevronLeftIcon,
 } from '@wordpress/icons';
 import {
 	ToolbarGroup,
 	ToolbarButton,
 	__experimentalToolbarItem as ToolbarItem,
-	Icon,
 	Spinner,
 	RangeControl,
 	DropdownMenu,
@@ -160,7 +157,12 @@ function AspectMenu( { isDisabled, onClick, toggleProps } ) {
 	);
 }
 
-export default function ImageEditor( { id, url, setAttributes } ) {
+export default function ImageEditor( {
+	id,
+	url,
+	setAttributes,
+	setIsEditingImage,
+} ) {
 	const { createErrorNotice } = useDispatch( 'core/notices' );
 	const [ isCropping, setIsCropping ] = useState( false );
 	const [ inProgress, setIsProgress ] = useState( null );
@@ -172,7 +174,6 @@ export default function ImageEditor( { id, url, setAttributes } ) {
 	const [ position, setPosition ] = useState( { x: 0, y: 0 } );
 	const [ zoom, setZoom ] = useState( 1 );
 	const [ aspect, setAspect ] = useState( 4 / 3 );
-	const isEditing = ! isCropping && url;
 
 	function adjustImage( action, attrs ) {
 		setIsProgress( action );
@@ -227,7 +228,7 @@ export default function ImageEditor( { id, url, setAttributes } ) {
 					</div>
 				) }
 				{ isCropping ? (
-					<Block.div className="richimage__crop-controls">
+					<div className="richimage__crop-controls">
 						<div
 							className="richimage__crop-area"
 							style={ {
@@ -260,13 +261,19 @@ export default function ImageEditor( { id, url, setAttributes } ) {
 							value={ zoom }
 							onChange={ setZoom }
 						/>
-					</Block.div>
+					</div>
 				) : (
 					<img alt="" src={ url } />
 				) }
 			</div>
-			{ isEditing && (
-				<BlockControls>
+			<BlockControls>
+				<ToolbarGroup>
+					<ToolbarButton
+						icon={ chevronLeftIcon }
+						onClick={ () => setIsEditingImage( false ) }
+					/>
+				</ToolbarGroup>
+				{ ! isCropping && (
 					<ToolbarGroup>
 						<ToolbarItem>
 							{ ( toggleProps ) => (
@@ -342,40 +349,35 @@ export default function ImageEditor( { id, url, setAttributes } ) {
 							} }
 						/>
 					</ToolbarGroup>
-				</BlockControls>
-			) }
-			{ isCropping && (
-				<BlockControls>
-					<ToolbarGroup>
-						<div className="richimage__crop-icon">
-							<Icon icon={ cropIcon } />
-						</div>
-					</ToolbarGroup>
-					<ToolbarGroup>
-						<ToolbarItem>
-							{ ( toggleProps ) => (
-								<AspectMenu
-									toggleProps={ toggleProps }
-									isDisabled={ inProgress }
-									onClick={ setAspect }
-								/>
-							) }
-						</ToolbarItem>
-					</ToolbarGroup>
-					<ToolbarGroup>
-						<ToolbarButton onClick={ cropImage }>
-							{ __( 'Apply' ) }
-						</ToolbarButton>
-						<ToolbarButton
-							onClick={ () => {
-								setIsCropping( false );
-							} }
-						>
-							{ __( 'Cancel' ) }
-						</ToolbarButton>
-					</ToolbarGroup>
-				</BlockControls>
-			) }
+				) }
+				{ isCropping && (
+					<>
+						<ToolbarGroup>
+							<ToolbarItem>
+								{ ( toggleProps ) => (
+									<AspectMenu
+										toggleProps={ toggleProps }
+										isDisabled={ inProgress }
+										onClick={ setAspect }
+									/>
+								) }
+							</ToolbarItem>
+						</ToolbarGroup>
+						<ToolbarGroup>
+							<ToolbarButton onClick={ cropImage }>
+								{ __( 'Apply' ) }
+							</ToolbarButton>
+							<ToolbarButton
+								onClick={ () => {
+									setIsCropping( false );
+								} }
+							>
+								{ __( 'Cancel' ) }
+							</ToolbarButton>
+						</ToolbarGroup>
+					</>
+				) }
+			</BlockControls>
 		</>
 	);
 }

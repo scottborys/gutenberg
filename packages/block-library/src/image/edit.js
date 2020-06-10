@@ -443,6 +443,7 @@ export function ImageEdit( {
 					id={ id }
 					url={ url }
 					setAttributes={ setAttributes }
+					setIsEditingImage={ setIsEditingImage }
 				/>
 			</Block.figure>
 		);
