@@ -47,14 +47,13 @@ export default function BlockEditorArea( {
 			getBlock,
 			getBlocks,
 		} = select( 'core/block-editor' );
-
+		const firstSelectedBlockId = getBlockSelectionStart();
 		return {
 			rootBlockId: getBlocks()[ 0 ]?.clientId,
 			isNavigationModeActive: isNavigationMode(),
-			selectionStartClientId: getBlockSelectionStart(),
+			selectionStartClientId: firstSelectedBlockId,
 			hasSelectedBlock:
-				!! selectionStartClientId &&
-				!! getBlock( selectionStartClientId ),
+				!! firstSelectedBlockId && !! getBlock( firstSelectedBlockId ),
 		};
 	}, [] );
 

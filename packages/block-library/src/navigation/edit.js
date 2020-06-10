@@ -87,10 +87,10 @@ function Navigation( {
 		},
 		[ fontSize.size ]
 	);
-	const isNavigationManagementScreen = useSelect(
+	const showFormatButtonsInToolbar = useSelect(
 		( select ) =>
-			select( 'core/block-editor' ).getSettings()
-				.__experimentalNavigationScreen
+			select( 'core/block-editor' ).getSettings().__experimentalUiParts
+				.navigationBlockToolbarFormats
 	);
 
 	const { navigatorToolbarButton, navigatorModal } = useBlockNavigator(
@@ -194,7 +194,7 @@ function Navigation( {
 	// UI State: rendered Block UI
 	return (
 		<Fragment>
-			{ ! isNavigationManagementScreen && (
+			{ showFormatButtonsInToolbar && (
 				<Fragment>
 					<BlockControls>
 						<Toolbar

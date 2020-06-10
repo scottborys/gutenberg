@@ -58,6 +58,10 @@ export function initialize( id, settings ) {
 	}
 	settings.__experimentalFetchLinkSuggestions = fetchLinkSuggestions;
 	settings.__experimentalNavigationScreen = true;
+	settings.__experimentalUiParts = {
+		blockToolbarSwitcher: false,
+		navigationBlockToolbarFormats: false,
+	};
 	render(
 		<Layout blockEditorSettings={ settings } />,
 		document.getElementById( id )

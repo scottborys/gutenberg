@@ -152,6 +152,10 @@ export const SETTINGS_DEFAULTS = {
 	__experimentalEnableFullSiteEditing: false,
 	__experimentalEnableFullSiteEditingDemo: false,
 	__experimentalEnableRichImageEditing: false,
+	__experimentalUiParts: {
+		blockToolbarSwitcher: true,
+		navigationBlockToolbarFormats: true,
+	},
 	__mobileEnablePageTemplates: false,
 	gradients: [
 		{

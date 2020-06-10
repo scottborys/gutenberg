@@ -31,7 +31,7 @@ export default function BlockToolbar( { hideDragHandle } ) {
 		isValid,
 		isVisual,
 		moverDirection,
-		isNavigationManagementScreen,
+		shouldShowBlockSwitcher,
 	} = useSelect( ( select ) => {
 		const { getBlockType } = select( 'core/blocks' );
 		const {
@@ -58,8 +58,8 @@ export default function BlockToolbar( { hideDragHandle } ) {
 				getBlockType( getBlockName( selectedBlockClientId ) ),
 			hasFixedToolbar: getSettings().hasFixedToolbar,
 			rootClientId: blockRootClientId,
-			isNavigationManagementScreen: getSettings()
-				.__experimentalNavigationScreen,
+			shouldShowBlockSwitcher: getSettings().__experimentalUiParts
+				.blockToolbarSwitcher,
 			isValid: selectedBlockClientIds.every( ( id ) =>
 				isBlockValid( id )
 			),
@@ -132,7 +132,7 @@ export default function BlockToolbar( { hideDragHandle } ) {
 								onDragStart={ onDraggableStart }
 								onDragEnd={ onDraggableEnd }
 							>
-								{ ! isNavigationManagementScreen && (
+								{ shouldShowBlockSwitcher && (
 									<BlockSwitcher
 										clientIds={ blockClientIds }
 									/>
