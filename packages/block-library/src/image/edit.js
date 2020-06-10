@@ -16,6 +16,7 @@ import {
 	TextareaControl,
 	TextControl,
 	ToolbarGroup,
+	ToolbarButton,
 	withNotices,
 } from '@wordpress/components';
 import { useViewportMatch } from '@wordpress/compose';
@@ -55,6 +56,7 @@ import {
 	ALLOWED_MEDIA_TYPES,
 	DEFAULT_SIZE_SLUG,
 } from './constants';
+import ImageEditor from './image-editor';
 
 export const pickRelevantMediaFiles = ( image ) => {
 	const imageProps = pick( image, [ 'alt', 'id', 'link', 'caption' ] );
@@ -140,6 +142,7 @@ export function ImageEdit( {
 	const isLargeViewport = useViewportMatch( 'medium' );
 	const [ captionFocused, setCaptionFocused ] = useState( false );
 	const isWideAligned = includes( [ 'wide', 'full' ], align );
+	const [ isEditingImage, setIsEditingImage ] = useState( false );
 
 	function onResizeStart() {
 		toggleSelection( false );
@@ -338,6 +341,12 @@ export function ImageEdit( {
 		}
 	}, [ isSelected ] );
 
+	const enableImageEditor = useSelect(
+		( select ) =>
+			select( 'core/block-editor' ).getSettings()
+				.__experimentalEnableRichImageEditing
+	);
+
 	const isExternal = isExternalImage( id, url );
 	const controls = (
 		<BlockControls>
@@ -355,6 +364,13 @@ export function ImageEdit( {
 					onSelectURL={ onSelectURL }
 					onError={ onUploadError }
 				/>
+			) }
+			{ enableImageEditor && (
+				<ToolbarGroup>
+					<ToolbarButton onClick={ () => setIsEditingImage( true ) }>
+						{ __( 'Edit' ) }
+					</ToolbarButton>
+				</ToolbarGroup>
 			) }
 			{ url && (
 				<ToolbarGroup>
@@ -404,12 +420,31 @@ export function ImageEdit( {
 		imageHeight,
 	} = useImageSize( ref, url, [ align ] );
 
+	// Cancel cropping on deselect.
+	useEffect( () => {
+		if ( ! isSelected ) {
+			setIsEditingImage( false );
+		}
+	}, [ isSelected ] );
+
 	if ( ! url ) {
 		return (
 			<>
 				{ controls }
 				<Block.div>{ mediaPlaceholder }</Block.div>
 			</>
+		);
+	}
+
+	if ( isEditingImage ) {
+		return (
+			<Block.figure ref={ ref } className={ classes }>
+				<ImageEditor
+					id={ id }
+					url={ url }
+					setAttributes={ setAttributes }
+				/>
+			</Block.figure>
 		);
 	}
 

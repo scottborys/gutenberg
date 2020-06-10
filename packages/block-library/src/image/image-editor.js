@@ -13,7 +13,7 @@ import {
 	BlockControls,
 	__experimentalBlock as Block,
 } from '@wordpress/block-editor';
-import { useState, useEffect } from '@wordpress/element';
+import { useState } from '@wordpress/element';
 import {
 	rotateLeft as rotateLeftIcon,
 	rotateRight as rotateRightIcon,
@@ -28,7 +28,6 @@ import {
 	__experimentalToolbarItem as ToolbarItem,
 	Icon,
 	Spinner,
-	withNotices,
 	RangeControl,
 	DropdownMenu,
 	MenuGroup,
@@ -36,11 +35,7 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
-
-/**
- * Internal dependencies
- */
-import richImageRequest from './api';
+import apiFetch from '@wordpress/api-fetch';
 
 const ROTATE_STEP = 90;
 const DEFAULT_CROP = {
@@ -54,6 +49,17 @@ const MIN_ZOOM = 1;
 const MAX_ZOOM = 3;
 const ZOOM_STEP = 0.1;
 const POPOVER_PROPS = { position: 'bottom right' };
+
+function richImageRequest( id, action, attrs ) {
+	return apiFetch( {
+		path: `__experimental/richimage/${ id }/${ action }`,
+		headers: {
+			'Content-type': 'application/json',
+		},
+		method: 'POST',
+		body: JSON.stringify( attrs ),
+	} );
+}
 
 function AspectGroup( { aspectRatios, isDisabled, label, onClick } ) {
 	return (
@@ -154,13 +160,7 @@ function AspectMenu( { isDisabled, onClick, toggleProps } ) {
 	);
 }
 
-function RichImage( props ) {
-	const {
-		isSelected,
-		attributes: { id, url },
-		originalBlock: OriginalBlock,
-		setAttributes,
-	} = props;
+export default function ImageEditor( { id, url, setAttributes } ) {
 	const { createErrorNotice } = useDispatch( 'core/notices' );
 	const [ isCropping, setIsCropping ] = useState( false );
 	const [ inProgress, setIsProgress ] = useState( null );
@@ -172,14 +172,7 @@ function RichImage( props ) {
 	const [ position, setPosition ] = useState( { x: 0, y: 0 } );
 	const [ zoom, setZoom ] = useState( 1 );
 	const [ aspect, setAspect ] = useState( 4 / 3 );
-	const isEditing = ! isCropping && isSelected && url;
-
-	// Cancel cropping on deselect.
-	useEffect( () => {
-		if ( ! isSelected ) {
-			setIsCropping( false );
-		}
-	}, [ isSelected ] );
+	const isEditing = ! isCropping && url;
 
 	function adjustImage( action, attrs ) {
 		setIsProgress( action );
@@ -269,7 +262,7 @@ function RichImage( props ) {
 						/>
 					</Block.div>
 				) : (
-					<OriginalBlock { ...props } className={ classes } />
+					<img alt="" src={ url } />
 				) }
 			</div>
 			{ isEditing && (
@@ -386,5 +379,3 @@ function RichImage( props ) {
 		</>
 	);
 }
-
-export default withNotices( RichImage );
