@@ -47,8 +47,10 @@ export default function BlockEditorArea( {
 			getBlock,
 			getBlocks,
 		} = select( 'core/block-editor' );
+
 		const selectionStartClientId = getBlockSelectionStart();
 		const rootClientId = getBlocks()[ 0 ]?.clientId;
+
 		return {
 			selectionStartClientId,
 			rootBlockId: rootClientId,
