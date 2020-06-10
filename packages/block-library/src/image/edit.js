@@ -365,7 +365,7 @@ export function ImageEdit( {
 					onError={ onUploadError }
 				/>
 			) }
-			{ enableImageEditor && (
+			{ url && enableImageEditor && (
 				<ToolbarGroup>
 					<ToolbarButton onClick={ () => setIsEditingImage( true ) }>
 						{ __( 'Edit' ) }
