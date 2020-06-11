@@ -160,6 +160,7 @@ function AspectMenu( { isDisabled, onClick, toggleProps } ) {
 export default function ImageEditor( {
 	id,
 	url,
+	alt,
 	setAttributes,
 	setIsEditingImage,
 } ) {
@@ -263,7 +264,7 @@ export default function ImageEditor( {
 						/>
 					</div>
 				) : (
-					<img alt="" src={ url } />
+					<img alt={ alt } src={ url } />
 				) }
 			</div>
 			<BlockControls>

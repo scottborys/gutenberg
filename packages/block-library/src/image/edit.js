@@ -436,12 +436,28 @@ export function ImageEdit( {
 		);
 	}
 
+	const filename = getFilename( url );
+	let defaultedAlt;
+
+	if ( alt ) {
+		defaultedAlt = alt;
+	} else if ( filename ) {
+		defaultedAlt = sprintf(
+			/* translators: %s: file name */
+			__( 'This image has an empty alt attribute; its file name is %s' ),
+			filename
+		);
+	} else {
+		defaultedAlt = __( 'This image has an empty alt attribute' );
+	}
+
 	if ( isEditingImage ) {
 		return (
 			<Block.figure ref={ ref } className={ classes }>
 				<ImageEditor
 					id={ id }
 					url={ url }
+					alt={ defaultedAlt }
 					setAttributes={ setAttributes }
 					setIsEditingImage={ setIsEditingImage }
 				/>
@@ -514,21 +530,6 @@ export function ImageEdit( {
 			</InspectorAdvancedControls>
 		</>
 	);
-
-	const filename = getFilename( url );
-	let defaultedAlt;
-
-	if ( alt ) {
-		defaultedAlt = alt;
-	} else if ( filename ) {
-		defaultedAlt = sprintf(
-			/* translators: %s: file name */
-			__( 'This image has an empty alt attribute; its file name is %s' ),
-			filename
-		);
-	} else {
-		defaultedAlt = __( 'This image has an empty alt attribute' );
-	}
 
 	let img = (
 		// Disable reason: Image itself is not meant to be interactive, but
