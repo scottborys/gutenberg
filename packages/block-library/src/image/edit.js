@@ -43,7 +43,7 @@ import { createBlock } from '@wordpress/blocks';
  * Internal dependencies
  */
 import { createUpgradedEmbedBlock } from '../embed/util';
-import useImageSize from './image-size';
+import useClientWidth from './use-client-width';
 
 /**
  * Module constants
@@ -397,12 +397,8 @@ export function ImageEdit( {
 		/>
 	);
 
-	const {
-		imageWidthWithinContainer,
-		imageHeightWithinContainer,
-		imageWidth,
-		imageHeight,
-	} = useImageSize( ref, url, [ align ] );
+	const [ { naturalWidth, naturalHeight }, setNaturalSize ] = useState( {} );
+	const clientWidth = useClientWidth( ref, [ align ] );
 
 	if ( ! url ) {
 		return (
@@ -452,8 +448,8 @@ export function ImageEdit( {
 						height={ height }
 						imageSizeOptions={ imageSizeOptions }
 						isResizable={ isResizable }
-						imageWidth={ imageWidth }
-						imageHeight={ imageHeight }
+						imageWidth={ naturalWidth }
+						imageHeight={ naturalHeight }
 					/>
 				</PanelBody>
 			</InspectorControls>
@@ -504,6 +500,14 @@ export function ImageEdit( {
 				src={ url }
 				alt={ defaultedAlt }
 				onClick={ onImageClick }
+				onLoad={ ( event ) => {
+					setNaturalSize(
+						pick( event.target, [
+							'naturalWidth',
+							'naturalHeight',
+						] )
+					);
+				} }
 				onError={ () => onImageError() }
 			/>
 			{ isBlobURL( url ) && <Spinner /> }
@@ -511,16 +515,29 @@ export function ImageEdit( {
 		/* eslint-enable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events */
 	);
 
+	let imageWidthWithinContainer;
+	let imageHeightWithinContainer;
+
+	if ( clientWidth && naturalWidth && naturalHeight ) {
+		const exceedMaxWidth = naturalWidth > clientWidth;
+		const ratio = naturalHeight / naturalWidth;
+		imageWidthWithinContainer = exceedMaxWidth ? clientWidth : naturalWidth;
+		imageHeightWithinContainer = exceedMaxWidth
+			? clientWidth * ratio
+			: naturalHeight;
+	}
+
 	if ( ! isResizable || ! imageWidthWithinContainer ) {
 		img = <div style={ { width, height } }>{ img }</div>;
 	} else {
 		const currentWidth = width || imageWidthWithinContainer;
 		const currentHeight = height || imageHeightWithinContainer;
 
-		const ratio = imageWidth / imageHeight;
-		const minWidth = imageWidth < imageHeight ? MIN_SIZE : MIN_SIZE * ratio;
+		const ratio = naturalWidth / naturalHeight;
+		const minWidth =
+			naturalWidth < naturalHeight ? MIN_SIZE : MIN_SIZE * ratio;
 		const minHeight =
-			imageHeight < imageWidth ? MIN_SIZE : MIN_SIZE / ratio;
+			naturalHeight < naturalWidth ? MIN_SIZE : MIN_SIZE / ratio;
 
 		// With the current implementation of ResizableBox, an image needs an
 		// explicit pixel value for the max-width. In absence of being able to
